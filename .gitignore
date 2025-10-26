@@ -1,0 +1,25 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Logs
+*.log
+repl.log
+
+# Dependency and build folders
+bin/
+build/
+dist/
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+
+# Go workspace files
+go.work
