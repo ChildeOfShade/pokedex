@@ -4,38 +4,34 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
+	cfg := &Config{} // single config for pagination
+
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for {
 		fmt.Print("Pokedex > ")
 
-		scanned := scanner.Scan()
-		if !scanned {
-			break
+		if !scanner.Scan() {
+			fmt.Println("Goodbye!")
+			return
 		}
 
-		// Get user input and clean it
-		words := cleanInput(scanner.Text())
-
-		// Ignore empty lines
-		if len(words) == 0 {
+		input := strings.ToLower(strings.TrimSpace(scanner.Text()))
+		if input == "" {
 			continue
 		}
 
+		words := cleanInput(input)
 		commandName := words[0]
-		cmd, exists := commands[commandName]
 
-		if !exists {
+		if cmd, ok := commands[commandName]; ok {
+			cmd.callback(cfg)
+		} else {
 			fmt.Println("Unknown command")
-			continue
-		}
-
-		// Execute the command
-		if err := cmd.callback(); err != nil {
-			fmt.Println("Error:", err)
 		}
 	}
 }
