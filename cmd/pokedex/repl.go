@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"strings"
@@ -10,7 +11,7 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*Config) error
+	callback    func(*Config, []string) error
 }
 
 // commands map holds all CLI commands
@@ -38,20 +39,25 @@ func init() {
 			description: "Show previous 20 location areas",
 			callback:    commandMapBack,
 		},
+		"explore": {
+			name:        "explore",
+			description: "Show Pokémon in a location area",
+			callback:    commandExplore,
+		},
 	}
 }
 
 // commandExit closes the program
-func commandExit(cfg *Config) error {
+func commandExit(cfg *Config, args []string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
 // commandHelp prints usage info
-func commandHelp(cfg *Config) error {
+func commandHelp(cfg *Config, args []string) error {
 	fmt.Println("Welcome to the Pokedex!")
-	fmt.Printf("something\n")
+	fmt.Println("Available commands:")
 
 	for _, cmd := range commands {
 		fmt.Printf("%s: %s\n", cmd.name, cmd.description)
@@ -66,4 +72,36 @@ func cleanInput(text string) []string {
 	text = strings.ToLower(text)
 	words := strings.Fields(text)
 	return words
+}
+
+// startRepl starts the command loop
+func startRepl(cfg *Config) {
+	scanner := bufio.NewScanner(os.Stdin)
+
+	for {
+		fmt.Print("Pokedex > ")
+
+		if !scanner.Scan() {
+			fmt.Println("\nGoodbye!")
+			return
+		}
+
+		words := cleanInput(scanner.Text())
+		if len(words) == 0 {
+			continue
+		}
+
+		cmdName := words[0]
+		cmd, exists := commands[cmdName]
+		if !exists {
+			fmt.Println("Unknown command")
+			continue
+		}
+
+		// Pass the remaining words as arguments
+		err := cmd.callback(cfg, words[1:])
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+	}
 }
